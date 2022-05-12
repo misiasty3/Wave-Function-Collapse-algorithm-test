@@ -1,55 +1,56 @@
+use strum::IntoEnumIterator;
+use strum_macros::EnumIter;
 use std::io::{self, Write};
 
-struct Tile {
-    type: Tile_type;
-    possiblities: Vec<Tile_type>
-}
-
-enum Tile_type {
+#[derive(EnumIter, Clone)]
+enum TileType {
     None,
     Black,
     White
 }
 
-impl std::fmt::Display for Tile {
+impl std::fmt::Display for TileType {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match *self {
-           Tile::None => write!(f, " "),
-           Tile::Black => write!(f, "|"),
-           Tile::White => write!(f, "-"),
+           TileType::None => write!(f, " "),
+           TileType::Black => write!(f, "|"),
+           TileType::White => write!(f, "-"),
        }
     }
 }
 
-fn terminal_clear() {
-    print!("{esc}c", esc = 27 as char);
+pub struct Screen {
+    content: Vec<Vec<TileType>>,
+    options: Vec<Vec<Vec<TileType>>>,
 }
 
-fn terminal_print(screen: Vec<Vec<Tile>>) {
-    for i in screen {
-        for j in i {
-            print!("{}", j);
-        }
-        print!("\n")
-    }
-    io::stdout().flush().unwrap();
-}
-
-
-fn create_screen(res: usize) -> Vec<Vec<Tile>> {
-    let mut screen: Vec<Vec<Tile>> = vec!();
-    for i in 0..res {
-        screen.push(vec!());
-        for j in 0..res {
-            screen[i].push(Tile{});
+impl Screen {
+    pub fn new(size: usize) -> Self {
+        let all_options: TileTypeIter = TileType::iter();
+        Self {
+            content: vec![vec![TileType::None; size]; size],
+            //options: vec![vec![vec![all_options.next().unwrap(); all_options.count()]; size]; size],
+            options: vec![vec![all_options.collect(); size]; size],
         }
     }
-    screen
+
+    pub fn print(&self) {
+        for i in &self.content {
+            for j in i {
+                print!("{}", j);
+            }
+            print!("\n")
+        }
+        io::stdout().flush().unwrap();
+    }
+
+    pub fn clear() {
+        print!("{esc}c", esc = 27 as char);
+    }
 }
 
 fn main() {
-    println!("Hello, world!");
-    let screen = create_screen(20);
-    terminal_clear();
-    terminal_print(screen);
+    let screen = Screen::new(20);
+    screen.print();
+    screen.print();
 }
